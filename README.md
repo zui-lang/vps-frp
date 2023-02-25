@@ -3,6 +3,45 @@
 #### 介绍
 几种通过自己服务器实现内网穿透的教程
 
+## 基于Ubuntu安装docker
+卸载旧版本docker
+```
+sudo apt-get remove docker docker-engine docker.io containerd runc
+```
+更新软件包索引并安装软件包以允许使用 基于 HTTPS 的存储库：aptapt
+```
+sudo apt-get update
+sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+```
+添加 Docker 的官方 GPG 密钥
+```
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+更新包索引：apt
+```
+sudo apt-get update
+```
+运行时收到 GPG 错误？(apt-get update)
+默认掩码可能配置不正确，导致无法检测到 存储库公钥文件。尝试授予 Docker 的读取权限 更新包索引之前的公钥文件
+```
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+sudo apt-get update安装 Docker Engine、containerd 和 Docker Compose
+```
+安装最新的 Docker Engine、containerd 和 Docker Compose
+```
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+通过运行映像验证 Docker 引擎安装是否成功：hello-world
+```
+sudo docker run hello-world
+```
+
 ## 基于Docker的FRP内网穿透部署
 
 ### 服务器搭建（FRPS）
@@ -22,7 +61,7 @@ bind_port = 7000
 dashboard_port = 7500
 # 登录面板账号设置
 dashboard_user = admin
-dashboard_pwd = spoto1234
+dashboard_pwd = admin23
 # 设置http及https协议下代理端口（非重要）
 vhost_http_port = 7080
 vhost_https_port = 7081
@@ -112,79 +151,3 @@ remote_port = 18389
 ```
 - 如果监听服务可以有IP限制的设置，需要允许的访问IP为中转内网设备的内网IP；
 - FRP由于端口会暴露在互联网上，虽然说使用方便但安全性较差；
-
-## 基于Zerotier根服务器的内网穿透部署
-
-
-### 创建（伪）根服务器 | 项目地址：https://github.com/Jonnyan404/zerotier-planet
-
-```
-docker run --restart=on-failure:3 -d --name ztncui -e HTTP_PORT=4000 -e HTTP_ALL_INTERFACES=yes -e ZTNCUI_PASSWD=mrdoc.fun -p 4000:4000 keynetworks/ztncui
-```
-
-### 创建 moon 服务器 | 项目地址：https://github.com/jonnyan404/docker-zerotier-moon
-```
-#创建容器
-docker run --name zerotier-moon -d -p 9993:9993 -p 9993:9993/udp -v /etc/ztconf/:/var/lib/zerotier-one jonnyan404/zerotier-moon -4 [公网ipx.x.x.x]
-
-#查看moon ID
-docker logs zerotier-moon
-```
-
-### 群晖 DSM 7.x 安装Zerotier客户端
-
-#### 登录SSH并创建虚拟网络设备TUN
-```
-#获取权限
-sudo -i
-
-#创建“创建虚拟网络设备TUN”的脚本，并设为开机自动运行
-echo -e '#!/bin/sh -e \ninsmod /lib/modules/tun.ko' > /usr/local/etc/rc.d/tun.sh
-
-#给予脚本运行权限
-chmod a+x /usr/local/etc/rc.d/tun.sh
-
-#运行脚本创建TUN
-/usr/local/etc/rc.d/tun.sh
-
-#确认TUN是否创建成功
-ls /dev/net/tun
-```
-
-创建存放配置文件的目录
-```
-mkdir /var/lib/zerotier-one
-```
-创建Zerotier应用容器：
-```
-docker run -d           \
-  --name zt             \
-  --restart=always      \
-  --device=/dev/net/tun \
-  --net=host            \
-  --cap-add=NET_ADMIN   \
-  --cap-add=SYS_ADMIN   \
-  -v /var/lib/zerotier-one:/var/lib/zerotier-one zerotier/zerotier-synology:latest
-```
-
-常用命令：
-```
-#查看zerotier状态
-docker exec -it zt zerotier-cli status
-
-#加入网络
-docker exec -it zt zerotier-cli join [xxxxxxxxxxxx]
-```
-
-```
-#加入moon服务器
-docker exec zt zerotier-cli orbit [moon_ID] [moon_ID]
-#确认是否加入
-docker exec zt zerotier-cli listpeers 
-```
-
-### Windows 客户端加入moon服务器
-```
-cd C:\ProgramData\ZeroTier\One
-zerotier-cli orbit [moon_id] [moon_id]
-```
