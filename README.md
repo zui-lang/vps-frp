@@ -81,9 +81,9 @@ docker run --restart=always --network host -d -v /etc/frp/frps.ini:/etc/frp/frps
 ```
 
 服务端开放端口：
-WebUI：7500
-Sever:7000
-Other:7080,7081
+- WebUI：7500
+- Sever: 7000
+- Other: 7080,7081
 
 ### 中转客户端配置（FRPC）
 ```
@@ -144,6 +144,6 @@ docker run --restart=always --network host -d -v /etc/npm/data:/data -v /etc/npm
 ```
 
 服务端开放端口：
-WebUI：81 (后面可以配置反向代理，可以关闭防火墙)
-Http: 80
-Https: 443
+- WebUI：81 (后面可以配置反向代理，可以关闭防火墙)
+- Http: 80
+- Https: 443
