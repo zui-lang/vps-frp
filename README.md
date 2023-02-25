@@ -19,6 +19,11 @@ sudo apt-get install \
 ```
 添加 Docker 的官方 GPG 密钥
 ```
+sudo mkdir -m 0755 -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+```
+使用以下命令设置存储库
+```
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
@@ -134,6 +139,15 @@ remote_port = 18088
 
 
 ### vps客户端配置
+
+创建挂在目录
+```
+# 创建data存放目录
+sudo mkdir /etc/npm/data
+# 创建证书存放目录
+sudo mkdir /etc/npm/letsencrypt
+```
+配置docker
 ```
 docker run --restart=always --network host -d -v /etc/npm/data:/data -v /etc/npm/letsencrypt:/etc/letsencrypt --name npm chishin/nginx-proxy-manager-zh
 #服务器镜像：chishin/nginx-proxy-manager-zh（中文汉化版本镜像）,jc21/nginx-proxy-manager（英文原版镜像）
