@@ -80,7 +80,10 @@ token = 12345678
 docker run --restart=always --network host -d -v /etc/frp/frps.ini:/etc/frp/frps.ini --name frps snowdreamtech/frps
 ```
 
-
+服务端开放端口：
+WebUI：7500
+Sever:7000
+Other:7080,7081
 
 ### 中转客户端配置（FRPC）
 ```
@@ -123,31 +126,24 @@ type = tcp
 local_ip = 192.168.1.229
 local_port = 80
 remote_port = 18088
-
-[Truenas web]
-type = tcp
-local_ip = 192.168.1.235
-local_port = 80
-remote_port = 18188
-
-[speedtest]
-type = tcp
-local_ip = 192.168.1.229
-local_port = 6580
-remote_port = 18190
-
-
-[webdav]
-type = tcp
-local_ip = 192.168.1.235
-local_port = 18080
-remote_port = 18189
-
-[RDP PC1]
-type = tcp
-local_ip = 192.168.1.235
-local_port = 3389
-remote_port = 18389
 ```
 - 如果监听服务可以有IP限制的设置，需要允许的访问IP为中转内网设备的内网IP；
 - FRP由于端口会暴露在互联网上，虽然说使用方便但安全性较差；
+
+## 基于Docker的Nginx-Proxy-Manager反向代理部署
+
+
+### vps客户端配置
+```
+docker run --restart=always --network host -d -v /etc/npm/data:/data -v /etc/npm/letsencrypt:/etc/letsencrypt --name npm chishin/nginx-proxy-manager-zh
+#服务器镜像：chishin/nginx-proxy-manager-zh（中文汉化版本镜像）,jc21/nginx-proxy-manager（英文原版镜像）
+#容器名：npm
+#重启：always
+#网络模式：host
+#文件映射：数据data&ssl证书
+```
+
+服务端开放端口：
+WebUI：81 (后面可以配置反向代理，可以关闭防火墙)
+Http: 80
+Https: 443
